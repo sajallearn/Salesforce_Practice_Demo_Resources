@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns:sf="antlib:com.salesforce" basedir="." default="validateDeploy" name="jenkinsCiCd">
+  <property file="Build.properties" />
+  <property environment="env" />
+  <taskdef resource="com/salesforce/antlib.xml" uri="antlib:com.salesforce">
+    <classpath>
+      <pathelement location="../Dependencies/ant-salesforce.jar" />
+    </classpath>
+  </taskdef>
+  <target name="start">
+    <echo message="Build process started..." />
+  </target>
+  <target name="retrieveUnpackaged">
+    <echo message="Retrieving Package..." />
+    <mkdir dir="../../Artifacts/${sf.deployEnvironment}/SFDCRetrieve" />
+    <sf:retrieve maxPoll="${sf.maxPoll}" password="${sf.password}" retrieveTarget="../../Artifacts/${sf.deployEnvironment}/SFDCRetrieve" serverurl="${sf.serverurl}" unpackaged="../../config/deployments/package.xml" username="${sf.username}" />
+  </target>
+  <target name="validateDeploy">
+    <echo message="Validating Deploy..." />
+    <sf:deploy checkOnly="true" deployRoot="${sf.deployRoot}" maxPoll="${sf.maxPoll}" password="${sf.password}" serverurl="${sf.serverurl}" username="${sf.username}" />
+  </target>
+  <target name="deployWithTestsRun">
+    <echo message="Deploying ${sf.deployRoot} as ${sf.username}, running all tests" />
+    <sf:deploy deployRoot="${sf.deployRoot}" logType="Debugonly" maxPoll="${sf.maxPoll}" password="${sf.password}" rollbackOnError="true" serverurl="${sf.serverurl}" testLevel="RunLocalTests" username="${sf.username}" />
+  </target>
+  <target name="deployIgnoreTests">
+    <echo message="Deploying ${sf.deployRoot} as ${sf.username}, ignore all tests" />
+    <sf:deploy deployRoot="${sf.deployRoot}" logType="Debugonly" maxPoll="${sf.maxPoll}" password="${sf.password}" rollbackOnError="true" serverurl="${sf.serverurl}" testLevel="NoTestRun" username="${sf.username}" />
+  </target>
+  <target name="RunSpecifiedTests">
+    <echo message="Deploying ${sf.deployRoot} as ${sf.username}, run selected tests" />
+    <sf:deploy deployRoot="${sf.deployRoot}" logType="Debugonly" maxPoll="${sf.maxPoll}" password="${sf.password}" rollbackOnError="true" serverurl="${sf.serverurl}" testLevel="RunSpecifiedTests" username="${sf.username}">
+      <runTest>Test_EinsteinVision</runTest>
+    </sf:deploy>
+  </target>
+  <target depends="validateDeploy" name="end">
+    <echo message="Build successfully completed !!!" />
+  </target>
+</project>
